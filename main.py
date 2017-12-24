@@ -7,16 +7,20 @@ points = int(input("Total points for game (301, 501, ...): "))
 
 players  = []
 
-
 def takeUsersNames(numberOfPlayer):
     while True:
         try:
             query = str(i + 1) + " player name? "
-            userInput = input(query)
+            userInput = str(input(query))
+            if userInput.isdigit():
+                print("Please input a string")
+                continue
+            elif len(userInput) == 0:
+                print("Incorrect input, please try again")
+                continue
         except ValueError:
-
-            if not userInput.isdigit():
-                print("Please input a integer")
+            if userInput.isdigit():
+                print("Please input a string")
             else:
                 print("Incorrect input, please try again")
             # better try again... Return to the start of the loop
