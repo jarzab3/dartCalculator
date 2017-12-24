@@ -1,15 +1,37 @@
 import datetime
 
+print ("Welcome to dart calculator program!\n")
+
 numberOfPlayer = int(input("Enter number of players: "))
 points = int(input("Total points for game (301, 501, ...): "))
 
 players  = []
 
-for x in range(0, numberOfPlayer):
-    plName = str(x + 1) + " player name? "
-    players.append([input(plName), points])
+
+def takeUsersNames(numberOfPlayer):
+    while True:
+        try:
+            query = str(i + 1) + " player name? "
+            userInput = input(query)
+        except ValueError:
+
+            if not userInput.isdigit():
+                print("Please input a integer")
+            else:
+                print("Incorrect input, please try again")
+            # better try again... Return to the start of the loop
+
+            continue
+
+        else:
+            return [userInput, points]
+
+for i in range(0, numberOfPlayer):
+    playersDetails = takeUsersNames(numberOfPlayer)
+    players.append(playersDetails)
 
 print ("\n")
+
 
 def takeUsersInput(playersName):
     pointsInput = 0
@@ -19,7 +41,7 @@ def takeUsersInput(playersName):
             pointsInput = int(input(playerFormatted))
         except ValueError:
             if not isinstance(points, int):
-                print("Plase input a integer")
+                print("Please input a integer")
             else:
                 print("Incorrect input, please try again")
             # better try again... Return to the start of the loop
@@ -49,6 +71,7 @@ def calcPoints(curPlayerIndex, inPoints):
         return False
 
 curPlayerIndex =  0
+
 
 while True:
     breaker = False
