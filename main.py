@@ -1,15 +1,17 @@
 import time
+from prettytable import PrettyTable
 
-print ("Welcome to dart calculator program!\n")
+print ("\nWelcome to dart calculator program!\n")
 
 numberOfPlayer = int(input("Enter number of players: "))
 
 players = []
 
+
 def selectGame():
     while True:
         try:
-            query = "For game 301 type: 1\nFor game 501 type: 2\n"
+            query = "\nGame 301 type: 1\nGame 501 type: 2\n"
             userInput = int(input(query))
             if userInput != 1 and userInput != 2:
                 print("Please input valid choice")
@@ -27,7 +29,9 @@ def selectGame():
                 totalScores = 501
             return totalScores
 
+
 points = selectGame()
+
 
 def takeUsersNames(numberOfPlayer):
     while True:
@@ -48,6 +52,7 @@ def takeUsersNames(numberOfPlayer):
 
         else:
             return [userInput, points]
+
 
 for i in range(0, numberOfPlayer):
     playersDetails = takeUsersNames(numberOfPlayer)
@@ -73,10 +78,10 @@ def takeUsersInput(playersName):
         else:
             return pointsInput
 
-def calcPoints(curPlayerIndex, inPoints):
 
-    findedPlayerPoints =  players[curPlayerIndex][1]
-    findedPlayerName =  players[curPlayerIndex][0]
+def calcPoints(curPlayerIndex, inPoints):
+    findedPlayerPoints = players[curPlayerIndex][1]
+    findedPlayerName = players[curPlayerIndex][0]
 
     check = (findedPlayerPoints - inPoints)
 
@@ -88,57 +93,92 @@ def calcPoints(curPlayerIndex, inPoints):
         players[curPlayerIndex][1] = findedPlayerPoints - inPoints
         return True
     else:
-        elapsed_time = time.time() - start_time
         print ("\n                                --------- Winner ---------       {}\n".format(findedPlayerName))
-        print ("Total time for a game: {} \n".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time))))
         return False
 
 
-curPlayerIndex = 0
-start_time = time.time()
+def getKey(item):
+    return item[1]
 
-while True:
-    breaker = False
 
-    if curPlayerIndex >= len(players):
-        curPlayerIndex = 0
+def printResults():
 
-    currentPlayer = players[curPlayerIndex]
+    playersToPrint = sorted(players, key=getKey)
 
-    for x in range(0, 3):
-        if currentPlayer[1] < 170:
-            print ("                                   Scores: {}".format(currentPlayer[1]))
-        currentPoints = takeUsersInput(currentPlayer[0])
-        if currentPoints == 999:
-            print ("You need to throw better")
-            break
-        else:
-            gameInProgress = calcPoints(curPlayerIndex, currentPoints)
-            if not gameInProgress:
-                breaker = True
-                break
+    t = PrettyTable(['Pos', 'Name', 'Score'])
 
-    curPlayerIndex = curPlayerIndex + 1
-
-    if breaker:
-        break
-
-    allPlayersInfo = ""
-
-    count = 0
+    pos = 1
     for ad in range(0, len(players)):
+        t.add_row([pos, playersToPrint[ad][0], str(playersToPrint[ad][1])])
+        pos = pos + 1
 
-        if count == len(players) - 1:
-            lastBit = False
-        else:
-            lastBit = True
+    print ("\n")
+    print (t)
+    print ("\n")
 
-        allPlayersInfo = allPlayersInfo + players[ad][0]
-        if lastBit:
-            allPlayersInfo = allPlayersInfo + " = " + str(players[ad][1]) + "  |  "
-        else:
-            allPlayersInfo = allPlayersInfo + " = " + str(players[ad][1])
 
-        count += 1
+def runMainProgram():
+    curPlayerIndex = 0
 
-    print ("\nCurrent points for players: " + allPlayersInfo + "\n\n")
+    start_time = time.time()
+
+    while True:
+        breaker = False
+
+        if curPlayerIndex >= len(players):
+            curPlayerIndex = 0
+
+        currentPlayer = players[curPlayerIndex]
+
+        for x in range(0, 3):
+            if currentPlayer[1] < 170:
+                print ("                                   Scores: {}".format(currentPlayer[1]))
+            currentPoints = takeUsersInput(currentPlayer[0])
+            if currentPoints == 999:
+                print ("You need to throw better")
+                break
+            else:
+                gameInProgress = calcPoints(curPlayerIndex, currentPoints)
+
+                if not gameInProgress:
+                    breaker = True
+                    elapsed_time = time.time() - start_time
+                    print (
+                        "\nTotal time for a game: {} \n".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time))))
+                    break
+
+        curPlayerIndex = curPlayerIndex + 1
+
+        if breaker:
+            break
+
+        printResults()
+
+        #
+        # allPlayersInfo = ""
+        #
+        # count = 0
+        #
+        #
+        #
+        # for ad in range(0, len(players)):
+        #
+        #
+        #     if count == len(players) - 1:
+        #         lastBit = False
+        #     else:
+        #         lastBit = True
+        #
+        #     allPlayersInfo = allPlayersInfo + players[ad][0]
+        #
+        #     if lastBit:
+        #         allPlayersInfo = allPlayersInfo + " = " + str(players[ad][1]) + "  |  "
+        #     else:
+        #         allPlayersInfo = allPlayersInfo + " = " + str(players[ad][1])
+        #
+        #     count += 1
+        #
+        # print ("\nCurrent points for players: " + allPlayersInfo + "\n\n")
+
+
+runMainProgram()
