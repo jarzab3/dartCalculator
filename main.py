@@ -52,6 +52,7 @@ def takeUsersNames(numberOfPlayer):
 
         else:
             userName = userInput.upper()
+            userName = userName.replace(" ", "")
             return [userName, points]
 
 
@@ -87,7 +88,7 @@ def calcPoints(curPlayerIndex, inPoints):
     check = (findedPlayerPoints - inPoints)
 
     if check < 0:
-        print ("                                      Your points are not counted in!")
+        print ("                                   Your points are not counted in!")
         return True
 
     elif check != 0:
