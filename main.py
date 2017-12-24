@@ -51,7 +51,8 @@ def takeUsersNames(numberOfPlayer):
                 print("Incorrect input, please try again")
 
         else:
-            return [userInput, points]
+            userName = userInput.upper()
+            return [userName, points]
 
 
 for i in range(0, numberOfPlayer):
