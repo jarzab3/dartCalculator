@@ -1,12 +1,6 @@
 import time
 from prettytable import PrettyTable
-
-print ("\nWelcome to dart calculator program!\n")
-
-numberOfPlayer = int(input("Enter number of players: "))
-
-players = []
-
+from scoringTable import *
 
 def selectGame():
     while True:
@@ -30,13 +24,10 @@ def selectGame():
             return totalScores
 
 
-points = selectGame()
-
-
-def takeUsersNames(numberOfPlayer):
+def takeUsersNames(numberOfPlayer, noPlayer):
     while True:
         try:
-            query = str(i + 1) + " player name? "
+            query = str(noPlayer + 1) + " player name? "
             userInput = str(input(query))
             if userInput.isdigit():
                 print("Please input a string")
@@ -53,14 +44,7 @@ def takeUsersNames(numberOfPlayer):
         else:
             userName = userInput.upper()
             userName = userName.replace(" ", "")
-            return [userName, points]
-
-
-for i in range(0, numberOfPlayer):
-    playersDetails = takeUsersNames(numberOfPlayer)
-    players.append(playersDetails)
-
-print ("\n")
+            return userName
 
 
 def takeUsersInput(playersName):
@@ -70,7 +54,7 @@ def takeUsersInput(playersName):
             playerFormatted = "Input points for player " + playersName + ": "
             pointsInput = int(input(playerFormatted))
         except ValueError:
-            if not isinstance(points, int):
+            if not isinstance(pointsInput, int):
                 print("Please input a integer")
             else:
                 print("Incorrect input, please try again")
@@ -81,29 +65,101 @@ def takeUsersInput(playersName):
             return pointsInput
 
 
-def calcPoints(curPlayerIndex, inPoints):
-    findedPlayerPoints = players[curPlayerIndex][1]
-    findedPlayerName = players[curPlayerIndex][0]
+def updateStats(player, dataForStats):
 
-    check = (findedPlayerPoints - inPoints)
+    currentStatsForPlayer = player[2]
+    currentPlayerPoints = player[1]
 
-    if check < 0:
-        print ("                                   Your points are not counted in!")
-        return True
+    newAverage = (currentStatsForPlayer["average"] + (dataForStats[0] / dataForStats[1])) / 2
 
-    elif check != 0:
-        players[curPlayerIndex][1] = findedPlayerPoints - inPoints
-        return True
-    else:
-        print ("\n                                --------- Winner ---------       {}\n".format(findedPlayerName))
-        return False
+    newAttempts = currentStatsForPlayer["throws"] + dataForStats[1]
+
+    newtimePlayed = int(currentStatsForPlayer["timePlayed"]) + int(dataForStats[2])
+
+    updatedStats = {"average": newAverage, "throws": newAttempts, "timePlayed": newtimePlayed}
+
+    return updatedStats
+
+
+def calcPoints(currentPlayer):
+
+    currentPlayerPoints = currentPlayer[1]
+    currentPlayerName = currentPlayer[0]
+
+    # Temporary points var
+    tempPoints = 0
+
+    # Points to return to and total to add to a user
+    pointsToAddToPlayer = 0
+
+    maxAttempts = 3
+    attempts = 1
+    timePlayed = 0
+
+    startTime = time.time()
+
+    while (attempts <= maxAttempts):
+        if currentPlayerPoints - tempPoints < 170:
+            found = False
+            # Display points for a user if the score is below 170 points, then use knows how should shoot
+            for a in finishes:
+                if int(a[0]) == (currentPlayerPoints - tempPoints):
+                    print ("                                   Scores: {}  --- Try: {}".format((currentPlayerPoints - tempPoints), a[1]))
+                    found = True
+
+            if not found:
+                print ("                                   Scores: {}".format(currentPlayerPoints - tempPoints))
+
+
+        userInput = takeUsersInput(currentPlayerName)
+
+        if userInput == 999:
+            print ("You need to throw better")
+            timePlayed = time.time() - startTime
+            dataForStats = [tempPoints, attempts, timePlayed]
+            updatedStats = updateStats(currentPlayer, dataForStats)
+            return [True, updatedStats]
+
+        tempPoints = tempPoints + userInput
+
+        check = (currentPlayerPoints - tempPoints)
+
+        if check < 0 or check == 1:
+            print ("                                   Your points are not counted in!")
+            timePlayed = time.time() - startTime
+            dataForStats = [tempPoints, attempts, timePlayed]
+            updatedStats = updateStats(currentPlayer, dataForStats)
+            return [True, updatedStats]
+
+        elif check == 0:
+            timePlayed = time.time() - startTime
+            dataForStats = [tempPoints, attempts, timePlayed]
+            updatedStats = updateStats(currentPlayer, dataForStats)
+            return [False, updatedStats]
+
+        elif check == 1:
+            print ("                                   Your points are not counted in!")
+            timePlayed = time.time() - startTime
+            dataForStats = [tempPoints, attempts, timePlayed]
+            updatedStats = updateStats(currentPlayer, dataForStats)
+            return [True, updatedStats]
+
+        attempts = attempts + 1
+
+    #Otherwise add points to a player
+    pointsToAddToPlayer = currentPlayerPoints - tempPoints
+    timePlayed = time.time() - startTime
+    dataForStats = [tempPoints, attempts, timePlayed]
+    updatedStats = updateStats(currentPlayer, dataForStats)
+
+    return [pointsToAddToPlayer, updatedStats]
 
 
 def getKey(item):
     return item[1]
 
 
-def printResults():
+def printResults(players):
 
     playersToPrint = sorted(players, key=getKey)
 
@@ -119,68 +175,91 @@ def printResults():
     print ("\n")
 
 
+def printStatsForPlayer(players):
+
+    playersToPrint = sorted(players, key=getKey)
+
+    statsTable = PrettyTable(['', 'Name', 'Score', 'Average', 'Total throws', 'Time Played'])
+
+    pos = 1
+
+    for i in range(0, len(players)):
+
+        currentStatsForPlayer = players[i][2]
+        name = players[i][0]
+        score = players[i][1]
+
+        statsTable.add_row([pos, name, score, int(round(currentStatsForPlayer["average"])), currentStatsForPlayer["throws"],
+                            time.strftime("%H:%M:%S", time.gmtime(int(currentStatsForPlayer["timePlayed"])))])
+
+        pos = pos + 1
+
+    print ("\n")
+    print (statsTable)
+    print ("\n")
+
 def runMainProgram():
+    print ("\nWelcome to dart calculator program!\n")
+
+    # Initial operations before the actual game starts
+    numberOfPlayer = int(input("Enter number of players: "))
+
+    players = []
+
+    points = selectGame()
+
+    # Statistics for a player
+    playerStats = {"average": 0, "throws": 0, "timePlayed": 0}
+
     curPlayerIndex = 0
+
+    # Take players names as well as create a array of players
+    for i in range(0, numberOfPlayer):
+        playerName = takeUsersNames(numberOfPlayer, i)
+        # Create an array for single player
+        singlePlayer = [playerName, points, playerStats]
+        players.append(singlePlayer)
+
+    print ("\n")
 
     start_time = time.time()
 
     while True:
-        breaker = False
+        # nextPlayer = False
 
+        # Reset counter when loop went through all players
         if curPlayerIndex >= len(players):
             curPlayerIndex = 0
 
         currentPlayer = players[curPlayerIndex]
 
-        for x in range(0, 3):
-            if currentPlayer[1] < 170:
-                print ("                                   Scores: {}".format(currentPlayer[1]))
-            currentPoints = takeUsersInput(currentPlayer[0])
-            if currentPoints == 999:
-                print ("You need to throw better")
-                break
-            else:
-                gameInProgress = calcPoints(curPlayerIndex, currentPoints)
+        gameInProgress = calcPoints(currentPlayer)
 
-                if not gameInProgress:
-                    breaker = True
-                    elapsed_time = time.time() - start_time
-                    print (
-                        "\nTotal time for a game: {} \n".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time))))
-                    break
+        if gameInProgress[0] == True:
+            currentPlayer[2] = gameInProgress[1]
+            printResults(players)
+            curPlayerIndex = curPlayerIndex + 1
 
-        curPlayerIndex = curPlayerIndex + 1
-
-        if breaker:
+        elif gameInProgress[0] == False:
+            currentPlayer[2] = gameInProgress[1]
             break
+        else:
+            # Update points for a player after 3 throws and increase a player index
+            currentPlayer[1] = gameInProgress[0]
+            currentPlayer[2] = gameInProgress[1]
+            printResults(players)
+            curPlayerIndex = curPlayerIndex + 1
 
-        printResults()
 
-        #
-        # allPlayersInfo = ""
-        #
-        # count = 0
-        #
-        #
-        #
-        # for ad in range(0, len(players)):
-        #
-        #
-        #     if count == len(players) - 1:
-        #         lastBit = False
-        #     else:
-        #         lastBit = True
-        #
-        #     allPlayersInfo = allPlayersInfo + players[ad][0]
-        #
-        #     if lastBit:
-        #         allPlayersInfo = allPlayersInfo + " = " + str(players[ad][1]) + "  |  "
-        #     else:
-        #         allPlayersInfo = allPlayersInfo + " = " + str(players[ad][1])
-        #
-        #     count += 1
-        #
-        # print ("\nCurrent points for players: " + allPlayersInfo + "\n\n")
+    elapsed_time = time.time() - start_time
+
+    print ("\n                                --------- Winner ---------       {}\n".format(currentPlayer[0]))
+
+    printStatsForPlayer(players)
+
+    print (               "\nTotal time for a game: {} \n".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time))))
 
 
 runMainProgram()
+
+# TODO average for all players at the end for 3 shoots. All possibilities for
