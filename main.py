@@ -56,6 +56,9 @@ def takeUsersInput(playersName):
         except ValueError:
             if not isinstance(pointsInput, int):
                 print("Please input a integer")
+            
+            elif pointsInput > 60:
+                print("Incorrect input, value cannot be above '60'")
             else:
                 print("Incorrect input, please try again")
 
@@ -70,9 +73,11 @@ def updateStats(player, dataForStats):
     currentStatsForPlayer = player[2]
     currentPlayerPoints = player[1]
 
-    newAverage = (currentStatsForPlayer["average"] + (dataForStats[0] / dataForStats[1])) / 2
+    currentPlayerTotalPoints = dataForStats[3]
 
     newAttempts = currentStatsForPlayer["throws"] + dataForStats[1]
+
+    newAverage = currentPlayerTotalPoints / newAttempts
 
     newtimePlayed = int(currentStatsForPlayer["timePlayed"]) + int(dataForStats[2])
 
@@ -81,10 +86,12 @@ def updateStats(player, dataForStats):
     return updatedStats
 
 
-def calcPoints(currentPlayer):
+def calcPoints(currentPlayer, points):
 
     currentPlayerPoints = currentPlayer[1]
     currentPlayerName = currentPlayer[0]
+    currentPlayerTotalPoints = currentPlayer[3]
+
 
     # Temporary points var
     tempPoints = 0
@@ -116,9 +123,9 @@ def calcPoints(currentPlayer):
         if userInput == 999:
             print ("You need to throw better")
             timePlayed = time.time() - startTime
-            dataForStats = [tempPoints, attempts, timePlayed]
+            dataForStats = [tempPoints, attempts, timePlayed, currentPlayerTotalPoints + tempPoints]
             updatedStats = updateStats(currentPlayer, dataForStats)
-            return [True, updatedStats]
+            return [True, updatedStats, currentPlayerTotalPoints + tempPoints]
 
         tempPoints = tempPoints + userInput
 
@@ -127,32 +134,32 @@ def calcPoints(currentPlayer):
         if check < 0 or check == 1:
             print ("                                   Your points are not counted in!")
             timePlayed = time.time() - startTime
-            dataForStats = [tempPoints, attempts, timePlayed]
+            dataForStats = [tempPoints, attempts , timePlayed, currentPlayerTotalPoints + tempPoints]
             updatedStats = updateStats(currentPlayer, dataForStats)
-            return [True, updatedStats]
+            return [True, updatedStats, currentPlayerTotalPoints + tempPoints]
 
         elif check == 0:
             timePlayed = time.time() - startTime
-            dataForStats = [tempPoints, attempts, timePlayed]
+            dataForStats = [tempPoints, attempts, timePlayed, currentPlayerTotalPoints + tempPoints]
             updatedStats = updateStats(currentPlayer, dataForStats)
-            return [False, updatedStats]
+            return [False, updatedStats, currentPlayerTotalPoints + tempPoints]
 
         elif check == 1:
             print ("                                   Your points are not counted in!")
             timePlayed = time.time() - startTime
-            dataForStats = [tempPoints, attempts, timePlayed]
+            dataForStats = [tempPoints, attempts, timePlayed, currentPlayerTotalPoints + tempPoints]
             updatedStats = updateStats(currentPlayer, dataForStats)
-            return [True, updatedStats]
-
-        attempts = attempts + 1
+            return [True, updatedStats, currentPlayerTotalPoints + tempPoints]
+        else:
+            attempts = attempts + 1
 
     #Otherwise add points to a player
     pointsToAddToPlayer = currentPlayerPoints - tempPoints
     timePlayed = time.time() - startTime
-    dataForStats = [tempPoints, attempts, timePlayed]
+    dataForStats = [tempPoints, attempts - 1, timePlayed, currentPlayerTotalPoints + tempPoints]
     updatedStats = updateStats(currentPlayer, dataForStats)
 
-    return [pointsToAddToPlayer, updatedStats]
+    return [pointsToAddToPlayer, updatedStats, currentPlayerTotalPoints + tempPoints]
 
 
 def getKey(item):
@@ -188,9 +195,9 @@ def printStatsForPlayer(players):
         currentStatsForPlayer = players[i][2]
         name = players[i][0]
         score = players[i][1]
-
-        statsTable.add_row([pos, name, score, int(round(currentStatsForPlayer["average"])), currentStatsForPlayer["throws"],
-                            time.strftime("%H:%M:%S", time.gmtime(int(currentStatsForPlayer["timePlayed"])))])
+        numberOfThrows = currentStatsForPlayer["throws"]
+        statsTable.add_row([pos, name, score, int(round(currentStatsForPlayer["average"]) * 3), 
+	numberOfThrows,time.strftime("%H:%M:%S", time.gmtime(int(currentStatsForPlayer["timePlayed"])))])
 
         pos = pos + 1
 
@@ -212,12 +219,13 @@ def runMainProgram():
     playerStats = {"average": 0, "throws": 0, "timePlayed": 0}
 
     curPlayerIndex = 0
+    totalPoints = 0
 
     # Take players names as well as create a array of players
     for i in range(0, numberOfPlayer):
         playerName = takeUsersNames(numberOfPlayer, i)
         # Create an array for single player
-        singlePlayer = [playerName, points, playerStats]
+        singlePlayer = [playerName, points, playerStats, totalPoints]
         players.append(singlePlayer)
 
     print ("\n")
@@ -233,20 +241,23 @@ def runMainProgram():
 
         currentPlayer = players[curPlayerIndex]
 
-        gameInProgress = calcPoints(currentPlayer)
+        gameInProgress = calcPoints(currentPlayer, points)
 
         if gameInProgress[0] == True:
             currentPlayer[2] = gameInProgress[1]
+            currentPlayer[3] = gameInProgress[2]
             printResults(players)
             curPlayerIndex = curPlayerIndex + 1
 
         elif gameInProgress[0] == False:
             currentPlayer[2] = gameInProgress[1]
+            currentPlayer[3] = gameInProgress[2]
             break
         else:
             # Update points for a player after 3 throws and increase a player index
             currentPlayer[1] = gameInProgress[0]
             currentPlayer[2] = gameInProgress[1]
+            currentPlayer[3] = gameInProgress[2]
             printResults(players)
             curPlayerIndex = curPlayerIndex + 1
 
