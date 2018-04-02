@@ -53,12 +53,13 @@ def takeUsersInput(playersName):
         try:
             playerFormatted = "Input points for player " + playersName + ": "
             pointsInput = int(input(playerFormatted))
+            if pointsInput > 60:
+                print("Incorrect input, value cannot be above '60'\n")
+                continue
         except ValueError:
             if not isinstance(pointsInput, int):
                 print("Please input a integer")
             
-            elif pointsInput > 60:
-                print("Incorrect input, value cannot be above '60'")
             else:
                 print("Incorrect input, please try again")
 
